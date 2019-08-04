@@ -4,27 +4,24 @@ using System.Collections.Generic;
 namespace uisawara
 {
 
-    [Serializable]
     public class Settings
     {
-        public List<Environment> build_settings = new List<Environment>();
+        public List<Environment> settings = new List<Environment>();
 
-        [Serializable]
         public class Environment
         {
             public string name;
             public string inherit;
-            public List<string> scene_list;
-            public KeyValueDictionary build_settings = new KeyValueDictionary();
-            public KeyValueDictionary player_settings = new KeyValueDictionary();
-            public KeyValueDictionary xr_settings = new KeyValueDictionary();
-            public string scripting_define_symbols;
+            public List<string> scene_list = new List<string>();
+            public Dictionary<string, object> build_settings = new Dictionary<string, object>();
+            public Dictionary<string, object> player_settings = new Dictionary<string, object>();
+            public Dictionary<string, object> xr_settings = new Dictionary<string, object>();
         }
 
         public int GetEnvironmentIndex(string environmentName)
         {
             int index = 0;
-            foreach (var env in build_settings)
+            foreach (var env in settings)
             {
                 if (env.name == environmentName)
                 {
@@ -42,7 +39,7 @@ namespace uisawara
             {
                 return null;
             }
-            return build_settings[index];
+            return settings[index];
         }
 
         public string[] ResolveInherit(string environmentName)
@@ -64,17 +61,57 @@ namespace uisawara
             return result.ToArray();
         }
 
-        public static Settings.Environment Merge(Settings.Environment lhs, Settings.Environment rhs)
+        /// <summary>
+        /// Merge rhs settings to lhs settings
+        /// </summary>
+        /// <param name="lhs">Lhs.</param>
+        /// <param name="rhs">Rhs.</param>
+        public static void Merge(Settings.Environment lhs, Settings.Environment rhs)
         {
-            var result = SettingsUtil.Copy(lhs);
+            // Special merge settings
 
-            if (rhs.build_settings != null) result.build_settings.Hang(rhs.build_settings);
-            if (rhs.player_settings != null) result.player_settings.Hang(rhs.player_settings);
-            if (rhs.xr_settings != null) result.xr_settings.Hang(rhs.xr_settings);
-            if (!string.IsNullOrEmpty(rhs.scripting_define_symbols)) result.scripting_define_symbols = result.scripting_define_symbols + ";" + rhs.scripting_define_symbols;
-            if (rhs.scene_list != null) result.scene_list.AddRange(rhs.scene_list);
+            if (rhs.player_settings.ContainsKey("scripting_define_symbols"))
+            {
+                string v;
+                if(lhs.player_settings==null)
+                {
+                    lhs.player_settings = new Dictionary<string, object>();
+                }
+                if (lhs.player_settings.ContainsKey("scripting_define_symbols"))
+                {
+                    v = lhs.player_settings["scripting_define_symbols"] + ";";
+                } else
+                {
+                    v = "";
+                }
+                lhs.player_settings["scripting_define_symbols"] = v + rhs.player_settings["scripting_define_symbols"];
+            }
 
-            return result;
+            if (rhs.scene_list != null) lhs.scene_list.AddRange(rhs.scene_list);
+
+            // Merge settings
+            if (rhs.build_settings != null) Settings.Merge(lhs.build_settings, rhs.build_settings);
+            if (rhs.player_settings != null) Settings.Merge(lhs.player_settings, rhs.player_settings);
+            if (rhs.xr_settings != null) Settings.Merge(lhs.xr_settings, rhs.xr_settings);
+
+        }
+
+        /// <summary>
+        /// Merge rhs settings to lhs settings
+        /// </summary>
+        /// <param name="lhs">Lhs.</param>
+        /// <param name="rhs">Rhs.</param>
+        public static void Merge(Dictionary<string, object> lhs, Dictionary<string, object> rhs)
+        {
+            foreach (var kv in rhs)
+            {
+                if (lhs.ContainsKey(kv.Key))
+                {
+                    continue;
+                }
+
+                lhs[kv.Key] = kv.Value;
+            }
         }
 
     }

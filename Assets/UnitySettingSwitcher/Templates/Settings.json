@@ -1,44 +1,24 @@
 {
-  "build_settings": [
+  "settings": [
     {
       "name": ".pc",
       "player_settings": {
-        "keyValues": [
-          {
-            "key": "virtualRealitySupported",
-            "b": false
-          }
-        ]
+        "virtualRealitySupported": false,
+        "scripting_define_symbols": "TARGET_PC"
       },
       "xr_settings": {
-        "keyValues": [
-          {
-            "key": "enabled",
-            "b": false
-          }
-        ]
-      },
-      "scripting_define_symbols": "TARGET_PC"
+        "enabled": false
+      }
     },
     {
       "name": ".vr",
       "player_settings": {
-        "keyValues": [
-          {
-            "key": "virtualRealitySupported",
-            "b": true
-          }
-        ]
+        "virtualRealitySupported": true,
+        "scripting_define_symbols": "TARGET_VR"
       },
       "xr_settings": {
-        "keyValues": [
-          {
-            "key": "enabled",
-            "b": true
-          }
-        ]
-      },
-      "scripting_define_symbols": "TARGET_VR"
+        "enabled": true
+      }
     },
     {
       "name": "flavors/SceneA",
@@ -48,24 +28,11 @@
         "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneB.unity"
       ],
       "build_settings": {
-        "keyValues": [
-          {
-            "key": "build_target_group",
-            "s": "Standalone"
-          },
-          {
-            "key": "build_target",
-            "s": "StandaloneWindows64"
-          }
-        ]
+        "build_target_group": "Standalone",
+        "build_target": "StandaloneWindows64"
       },
       "player_settings": {
-        "keyValues": [
-          {
-            "key": "applicationIdentifier",
-            "s": "com.example.AppPc"
-          }
-        ]
+        "applicationIdentifier": "com.example.AppPc"
       }
     },
     {
@@ -76,33 +43,24 @@
         "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneC.unity"
       ],
       "build_settings": {
-        "keyValues": [
-          {
-            "key": "build_target_group",
-            "s": "Standalone"
-          },
-          {
-            "key": "build_target",
-            "s": "StandaloneWindows64"
-          }
-        ]
+        "build_target_group": "Standalone",
+        "build_target": "StandaloneWindows64"
       },
       "player_settings": {
-        "keyValues": [
-          {
-            "key": "applicationIdentifier",
-            "s": "com.example.AppVr"
-          }
-        ]
+        "applicationIdentifier": "com.example.AppVr"
       }
     },
     {
       "name": "buildtype/develop",
-      "scripting_define_symbols": "ENV_DEVELOP"
+      "player_settings": {
+        "scripting_define_symbols": "ENV_DEVELOP"
+      }
     },
     {
       "name": "buildtype/production",
-      "scripting_define_symbols": "ENV_PRODUCTION"
+      "player_settings": {
+        "scripting_define_symbols": "ENV_PRODUCTION"
+      }
     }
   ]
 }

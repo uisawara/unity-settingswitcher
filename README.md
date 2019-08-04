@@ -30,6 +30,9 @@
 
 ## 使いかた
 
+- 導入
+  - MiniJSONが必要です (https://gist.github.com/darktable/1411710)
+
 - 手順
   - UnitySettingSwitcherウィンドウを開く。(Window->Unity Setting Switcherを選択か、CMD+E)
   - "Create settings.json from template"ボタンをクリックすると、/Assets/ディレクトリにsettings.jsonが生成される。
@@ -50,14 +53,10 @@
   - scene_list : array<string>
     - シーンファイル(.scene)パス
   - player_settings : object
-    - keyValues : array
-      - key : 設定キー名
-      - s : 設定値（対象の設定がstring型用）
-      - b : 設定値（対象の設定がbool型用）
-      - i : 設定値（対象の設定がint型用）
-      - f : 設定値（対象の設定がfloat型用）
+    - 設定キー名(UnityのBuildSetting等該当クラスのpublic-staticメンバ名) : 値(string,bool,int,floatのみ対応)
   - xr_settings : object
     - keyValues : ※player_settings同様
+
 - 設定名
   - "."で始まっているとUnitySettingSwitcherウィンドウの設定一覧上に非表示になる。
 - player_settings
@@ -73,9 +72,3 @@
   - 選択されている設定の定義されている順
   - 継承構造の子側から親側に順次
 - JSONで記述された設定はC#のリフレクションを用いてBuildSettingsクラス等のpublic staticメンバーへ反映している。
-
-## 現在の制約
-
-* UnityPackageManagerには未対応
-* 諸事情によりSettings.jsonのフォーマットが若干煩雑になっている
-  (player_settings/配下にkeyValues項があるが、player_settings直下にjsonのkey-valueを入れたほうが記述しやすい・シンプルになる→UnityのJsonUtilityで実現する方法がわからなかった)

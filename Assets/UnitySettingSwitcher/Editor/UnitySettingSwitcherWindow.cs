@@ -21,8 +21,8 @@ namespace uisawara
     public class UnitySettingSwitcherWindow : EditorWindow
     {
 
-        private static Settings buildSettings;
-        private static SettingsSelector buildSettingsSelector = new SettingsSelector();
+        private static Settings settings;
+        private static SettingsSelector settingsSelector = new SettingsSelector();
 
         [MenuItem("Window/Unity Setting Switcher %e")]
         static void Open()
@@ -34,12 +34,12 @@ namespace uisawara
         {
 
             string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME);
-            buildSettingsSelector.LoadBuildSettingsSelected();
+            settingsSelector.LoadBuildSettingsSelected();
 
-            if (UnitySettingSwitcherWindow.buildSettings == null)
+            if (UnitySettingSwitcherWindow.settings == null)
             {
                 Reload();
-                if (buildSettings == null)
+                if (settings == null)
                 {
                     if (GUILayout.Button("Create " + SettingConstants.SETTING_FILE_NAME + " from template"))
                     {
@@ -80,15 +80,15 @@ namespace uisawara
 
                 Debug.Log(sceneList.ToString());
             }
-            //if (GUILayout.Button("Open Buildscript"))
-            //{
-            //    System.Diagnostics.Process.Start(jsonPath);
-            //}
+            if (GUILayout.Button("Open Buildscript"))
+            {
+                System.Diagnostics.Process.Start(jsonPath);
+            }
             GUILayout.EndHorizontal();
 
             GUILayout.Space(20);
 
-            // Build environments.
+            // Build environments
             GUILayout.BeginHorizontal();
             GUILayout.Label("Build Environments:");
             if (GUILayout.Button("Reload"))
@@ -101,8 +101,9 @@ namespace uisawara
             GUILayout.Space(20);
             GUILayout.BeginVertical();
 
+            // Setting buttons
             string group = "";
-            foreach (var bs in buildSettings.build_settings)
+            foreach (var bs in settings.settings)
             {
                 string name = bs.name;
 
@@ -120,18 +121,18 @@ namespace uisawara
 
                 if (name[0] != '.')
                 {
-                    bool activeEnv = UnitySettingSwitcherWindow.buildSettingsSelector.IsSelected(bs.name);
+                    bool activeEnv = UnitySettingSwitcherWindow.settingsSelector.IsSelected(bs.name);
                     GUI.backgroundColor = activeEnv ? Color.gray : new Color(32, 96, 128);
 
                     if (GUILayout.Button((activeEnv ? "*":"") + name))
                     {
-                        UnitySettingSwitcherWindow.buildSettingsSelector.LoadBuildSettingsSelected();
-                        UnitySettingSwitcherWindow.buildSettingsSelector.Select(bs.name);
-                        UnitySettingSwitcherWindow.buildSettingsSelector.SaveBuildSettingsSelected();
+                        UnitySettingSwitcherWindow.settingsSelector.LoadBuildSettingsSelected();
+                        UnitySettingSwitcherWindow.settingsSelector.Select(bs.name);
+                        UnitySettingSwitcherWindow.settingsSelector.SaveBuildSettingsSelected();
 
-                        string[] envlist = UnitySettingSwitcherWindow.buildSettingsSelector.buildSettingsSelected.environmentPaths.ToArray();
+                        string[] envlist = UnitySettingSwitcherWindow.settingsSelector.buildSettingsSelected.environmentPaths.ToArray();
                         Debug.Log("ApplyEnv: " + String.Join(" + ", envlist));
-                        var env = SettingsUtil.Create(buildSettings, envlist);
+                        var env = SettingsUtil.Create(settings, envlist);
                         SettingsUtil.ChangeBuildSettings(env);
                     }
                 }
@@ -146,7 +147,7 @@ namespace uisawara
         private void Reload()
         {
             var buildSettings = SettingsUtil.LoadBuildSettings();
-            UnitySettingSwitcherWindow.buildSettings = buildSettings;
+            UnitySettingSwitcherWindow.settings = buildSettings;
             Debug.Log("reload " + SettingConstants.SETTING_FILE_NAME + " finished");
         }
 

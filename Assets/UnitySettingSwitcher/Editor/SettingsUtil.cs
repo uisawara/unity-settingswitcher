@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using MiniJSON;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.XR;
+using System.Linq;
 
 namespace uisawara
 {
@@ -26,9 +29,27 @@ namespace uisawara
             string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME);
             if (File.Exists(jsonPath))
             {
+                var result = new Settings();
+
                 string json = File.ReadAllText(jsonPath);
-                var data = JsonUtility.FromJson<Settings>(json);
-                return data;
+                var data_ = Json.Deserialize(json) as Dictionary<string, object>;
+
+                var settings = (IList)data_["settings"];
+                foreach(var s in settings)
+                {
+                    var se = new Settings.Environment();
+                    result.settings.Add(se);
+
+                    var bs = (IDictionary)s;
+                    se.name = bs.Contains("name")? (string)bs["name"] : null;
+                    se.inherit = bs.Contains("inherit")? (string)bs["inherit"] : null;
+                    se.scene_list = bs.Contains("scene_list") ? ((List<object>)bs["scene_list"]).Select(x=>(string)x).ToList<string>() : null;
+                    se.build_settings = bs.Contains("build_settings")? (Dictionary<string, object>)bs["build_settings"] : null;
+                    se.player_settings = bs.Contains("player_settings")? (Dictionary<string, object>)bs["player_settings"] : null;
+                    se.xr_settings = bs.Contains("xr_settings")? (Dictionary<string, object>)bs["xr_settings"] : null;
+                }
+
+                return result;
             }
             return null;
         }
@@ -51,7 +72,7 @@ namespace uisawara
             {
                 sb.Remove(sb.Length - 5, 5);
             }
-            Debug.Log(" - EnvironmentTree: [" + sb.ToString() + "]");
+            Debug.Log(" - Settings: [" + sb.ToString() + "]");
 
             // 環境設定の生成
             var result = new Settings.Environment();
@@ -62,8 +83,8 @@ namespace uisawara
                 {
                     throw new ArgumentNullException("setting not found: " + env);
                 }
-                var current = buildSettings.build_settings[index];
-                result = Settings.Merge(result, current);
+                var current = buildSettings.settings[index];
+                Settings.Merge(result, current);
             }
             return result;
         }
@@ -88,13 +109,13 @@ namespace uisawara
             BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildSettings.build_settings != null)
             {
-                if (buildSettings.build_settings.dictionary.ContainsKey("build_target"))
+                if (buildSettings.build_settings.ContainsKey("build_target"))
                 {
-                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), buildSettings.build_settings.dictionary["build_target_group"].s, true);
+                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)buildSettings.build_settings["build_target_group"], true);
                 }
-                if (buildSettings.build_settings.dictionary.ContainsKey("build_target"))
+                if (buildSettings.build_settings.ContainsKey("build_target"))
                 {
-                    buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), buildSettings.build_settings.dictionary["build_target"].s, true);
+                    buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)buildSettings.build_settings["build_target"], true);
                 }
                 EditorUserBuildSettings.SwitchActiveBuildTarget(buildTargetGroup, buildTarget);
             }
@@ -112,10 +133,11 @@ namespace uisawara
             }
 
             // ScriptingDefineSymbols
-            if (buildSettings.scripting_define_symbols != null)
+            if (buildSettings.player_settings.ContainsKey("scripting_define_symbols"))
             {
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, buildSettings.scripting_define_symbols);
-                Debug.Log(" - ScriptingDefineSymbols: " + buildSettings.scripting_define_symbols);
+                var v = (string)buildSettings.player_settings["scripting_define_symbols"];
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, v);
+                Debug.Log(" - ScriptingDefineSymbols: " + v);
             }
 
             // Scenes
@@ -141,50 +163,56 @@ namespace uisawara
 
         }
 
-        private static void ApplySettings(Type target, KeyValueDictionary data)
+        private static void ApplySettings(Type target, Dictionary<string, object> data)
         {
             var fis = target.GetMembers(BindingFlags.Public | BindingFlags.Static);
             var sb = new StringBuilder();
             sb.AppendLine(" - " + target.Name + ":");
-            foreach (var kv in data.dictionary)
+            foreach (var kv in data)
             {
-                var p = target.GetProperty(kv.Key, BindingFlags.Public | BindingFlags.Static);
-                var pt = p.PropertyType;
-                if (p == null)
+                var key = kv.Key;
+                var value = kv.Value;
+
+                // Skip special keys.
+                if(key== "scripting_define_symbols")
                 {
-                    sb.AppendLine(" - unknown key: " + kv.Key);
                     continue;
                 }
 
+                var p = target.GetProperty(key, BindingFlags.Public | BindingFlags.Static);
+                var pt = p.PropertyType;
+                if (p == null)
+                {
+                    sb.AppendLine(" - unknown key: " + key);
+                    continue;
+                }
+
+                sb.Append("    - ");
+                sb.AppendLine(key + " = " + value);
+                Debug.Log(sb.ToString());
+
                 if (pt == typeof(String))
                 {
-                    p.SetValue(null, kv.Value.s);
-                    sb.Append("    - ");
-                    sb.AppendLine(kv.Key + " = " + kv.Value.s);
+                    var v = (String)value;
+                    p.SetValue(null, v);
                 }
                 else
                 if (pt == typeof(Boolean))
                 {
-                    p.SetValue(null, kv.Value.b);
-                    sb.Append("    - ");
-                    sb.AppendLine(kv.Key + " = " + kv.Value.b);
+                    p.SetValue(null, (Boolean)value);
                 }
                 else
                 if (pt == typeof(int))
                 {
-                    p.SetValue(null, kv.Value.i);
-                    sb.Append("    - ");
-                    sb.AppendLine(kv.Key + " = " + kv.Value.i);
+                    p.SetValue(null, (int)value);
                 }
                 else
                 if (pt == typeof(float))
                 {
-                    p.SetValue(null, kv.Value.f);
-                    sb.Append("    - ");
-                    sb.AppendLine(kv.Key + " = " + kv.Value.f);
+                    p.SetValue(null, (float)value);
                 }
             }
-            Debug.Log(sb.ToString());
+
         }
 
     }
