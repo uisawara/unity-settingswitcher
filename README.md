@@ -1,14 +1,24 @@
 # UnitySettingSwitcher
 
 構造化された設定ファイルをもとにUnity設定を切り替えられるようにします。
-設定ファイルでは名前付きで設定(Setting)を定義します。
-SettingではUnityの各種設定(BuildSettings, PlayerSettings, XRSettings)にセットする値を定義します。
-Settingは他のSettingの設定を継承(inherit)して差分設定を作ることができます。
-Setting名は"/"で区切ることでグループ化することができます。（現在のところグループは１階層のみです）
+
+![Screen Shot 2019-08-04 at 13 31 43](https://user-images.githubusercontent.com/4578728/62419488-4177fc00-b6bc-11e9-8409-19a2c3d287b3.png)
+
+* 設定ファイルでは名前付きで設定(Setting)を定義します。
+* SettingではUnityの各種設定(BuildSettings, PlayerSettings, XRSettings)にセットする値を定義します。
+* Settingは他のSettingの設定を継承(inherit)して差分設定を作ることができます。
+* Setting名は"/"で区切ることでグループ化することができます。（現在のところグループは１階層のみです）
 
 ## 利用例
 
 - PC向けとVR向け、develop向けとproduction向けを切り替える。
+
+例)
+![unity-settingswitcher-sample](https://user-images.githubusercontent.com/4578728/62419417-8438d480-b6ba-11e9-8c12-69abba41261e.png)
+* 設定例
+    * PC用設定を継承したWindows64向け設定とDevelop向け設定をマージしたものをUnityへ反映する
+    * VR用設定を継承したSteamVR向け設定とProduction向け設定をマージしたものをUnityへ反映する
+
 
 ## 使いかた
 
