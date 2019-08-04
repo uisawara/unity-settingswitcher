@@ -1,0 +1,108 @@
+{
+  "build_settings": [
+    {
+      "name": ".pc",
+      "player_settings": {
+        "keyValues": [
+          {
+            "key": "virtualRealitySupported",
+            "b": false
+          }
+        ]
+      },
+      "xr_settings": {
+        "keyValues": [
+          {
+            "key": "enabled",
+            "b": false
+          }
+        ]
+      },
+      "scripting_define_symbols": "TARGET_PC"
+    },
+    {
+      "name": ".vr",
+      "player_settings": {
+        "keyValues": [
+          {
+            "key": "virtualRealitySupported",
+            "b": true
+          }
+        ]
+      },
+      "xr_settings": {
+        "keyValues": [
+          {
+            "key": "enabled",
+            "b": true
+          }
+        ]
+      },
+      "scripting_define_symbols": "TARGET_VR"
+    },
+    {
+      "name": "flavors/SceneA",
+      "inherit": ".pc",
+      "scene_list": [
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity"
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneB.unity"
+      ],
+      "build_settings": {
+        "keyValues": [
+          {
+            "key": "build_target_group",
+            "s": "Standalone"
+          },
+          {
+            "key": "build_target",
+            "s": "StandaloneWindows64"
+          }
+        ]
+      },
+      "player_settings": {
+        "keyValues": [
+          {
+            "key": "applicationIdentifier",
+            "s": "com.example.AppPc"
+          }
+        ]
+      }
+    },
+    {
+      "name": "flavors/SceneB",
+      "inherit": ".vr",
+      "scene_list": [
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity"
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneC.unity"
+      ],
+      "build_settings": {
+        "keyValues": [
+          {
+            "key": "build_target_group",
+            "s": "Standalone"
+          },
+          {
+            "key": "build_target",
+            "s": "StandaloneWindows64"
+          }
+        ]
+      },
+      "player_settings": {
+        "keyValues": [
+          {
+            "key": "applicationIdentifier",
+            "s": "com.example.AppVr"
+          }
+        ]
+      }
+    },
+    {
+      "name": "buildtype/develop",
+      "scripting_define_symbols": "ENV_DEVELOP"
+    },
+    {
+      "name": "buildtype/production",
+      "scripting_define_symbols": "ENV_PRODUCTION"
+    }
+  ]
+}
