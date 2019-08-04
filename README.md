@@ -6,8 +6,16 @@
 
 * 設定ファイルでは名前付きで設定(Setting)を定義します。
 * SettingではUnityの各種設定(BuildSettings, PlayerSettings, XRSettings)にセットする値を定義します。
-* Settingは他のSettingの設定を継承(inherit)して差分設定を作ることができます。
-* Setting名は"/"で区切ることでグループ化することができます。（現在のところグループは１階層のみです）
+* 可能なこと
+    * 他Settingを継承したSettingの定義
+    * Settingのグループ分け
+    * SettingSwitcherウィンドウからのSetting切替
+    * Settingの有効・無効の切替
+    * SwttingSwitcherウィンドウのSettingリストへ非表示なSettingの定義
+
+* ※Settingは他のSettingの設定を継承(inherit)して差分設定を作ることができます。
+* ※Setting名は"/"で区切ることでグループ化することができます。（現在のところグループは１階層のみ）
+* ※各グループ内で選択してアクティブにできる設定は１つのみ
 
 ## 利用例
 
