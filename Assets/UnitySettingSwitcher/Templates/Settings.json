@@ -44,7 +44,7 @@
       "name": "flavors/SceneA",
       "inherit": ".pc",
       "scene_list": [
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity"
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
         "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneB.unity"
       ],
       "build_settings": {
@@ -72,7 +72,7 @@
       "name": "flavors/SceneB",
       "inherit": ".vr",
       "scene_list": [
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity"
+        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
         "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneC.unity"
       ],
       "build_settings": {
