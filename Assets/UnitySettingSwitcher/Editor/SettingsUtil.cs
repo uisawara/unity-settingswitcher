@@ -47,7 +47,6 @@ namespace uisawara
                     se.build_settings = bs.Contains("build_settings")? (Dictionary<string, object>)bs["build_settings"] : null;
                     se.player_settings = bs.Contains("player_settings")? (Dictionary<string, object>)bs["player_settings"] : null;
                     se.xr_settings = bs.Contains("xr_settings")? (Dictionary<string, object>)bs["xr_settings"] : null;
-                    se.scripting_define_symbols = bs.Contains("scripting_define_symbols")? (string)bs["scripting_define_symbols"] : null;
                 }
 
                 return result;
@@ -73,7 +72,7 @@ namespace uisawara
             {
                 sb.Remove(sb.Length - 5, 5);
             }
-            Debug.Log(" - EnvironmentTree: [" + sb.ToString() + "]");
+            Debug.Log(" - Settings: [" + sb.ToString() + "]");
 
             // 環境設定の生成
             var result = new Settings.Environment();
@@ -85,7 +84,7 @@ namespace uisawara
                     throw new ArgumentNullException("setting not found: " + env);
                 }
                 var current = buildSettings.settings[index];
-                result = Settings.Merge(result, current);
+                Settings.Merge(result, current);
             }
             return result;
         }
@@ -134,10 +133,11 @@ namespace uisawara
             }
 
             // ScriptingDefineSymbols
-            if (buildSettings.scripting_define_symbols != null)
+            if (buildSettings.player_settings.ContainsKey("scripting_define_symbols"))
             {
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, buildSettings.scripting_define_symbols);
-                Debug.Log(" - ScriptingDefineSymbols: " + buildSettings.scripting_define_symbols);
+                var v = (string)buildSettings.player_settings["scripting_define_symbols"];
+                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, v);
+                Debug.Log(" - ScriptingDefineSymbols: " + v);
             }
 
             // Scenes
@@ -172,6 +172,12 @@ namespace uisawara
             {
                 var key = kv.Key;
                 var value = kv.Value;
+
+                // Skip special keys.
+                if(key== "scripting_define_symbols")
+                {
+                    continue;
+                }
 
                 var p = target.GetProperty(key, BindingFlags.Public | BindingFlags.Static);
                 var pt = p.PropertyType;

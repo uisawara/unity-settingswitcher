@@ -12,11 +12,10 @@ namespace uisawara
         {
             public string name;
             public string inherit;
-            public List<string> scene_list;
+            public List<string> scene_list = new List<string>();
             public Dictionary<string, object> build_settings = new Dictionary<string, object>();
             public Dictionary<string, object> player_settings = new Dictionary<string, object>();
             public Dictionary<string, object> xr_settings = new Dictionary<string, object>();
-            public string scripting_define_symbols;
         }
 
         public int GetEnvironmentIndex(string environmentName)
@@ -62,20 +61,39 @@ namespace uisawara
             return result.ToArray();
         }
 
-        public static Environment Merge(Settings.Environment lhs, Settings.Environment rhs)
+        /// <summary>
+        /// Merge rhs settings to lhs settings
+        /// </summary>
+        /// <param name="lhs">Lhs.</param>
+        /// <param name="rhs">Rhs.</param>
+        public static void Merge(Settings.Environment lhs, Settings.Environment rhs)
         {
-            var result = SettingsUtil.Copy(lhs);
+            // Special merge settings
+
+            if (rhs.player_settings.ContainsKey("scripting_define_symbols"))
+            {
+                string v;
+                if(lhs.player_settings==null)
+                {
+                    lhs.player_settings = new Dictionary<string, object>();
+                }
+                if (lhs.player_settings.ContainsKey("scripting_define_symbols"))
+                {
+                    v = lhs.player_settings["scripting_define_symbols"] + ";";
+                } else
+                {
+                    v = "";
+                }
+                lhs.player_settings["scripting_define_symbols"] = v + rhs.player_settings["scripting_define_symbols"];
+            }
+
+            if (rhs.scene_list != null) lhs.scene_list.AddRange(rhs.scene_list);
 
             // Merge settings
-            if (rhs.build_settings != null) Settings.Merge(result.build_settings, rhs.build_settings);
-            if (rhs.player_settings != null) Settings.Merge(result.player_settings, rhs.player_settings);
-            if (rhs.xr_settings != null) Settings.Merge(result.xr_settings, rhs.xr_settings);
+            if (rhs.build_settings != null) Settings.Merge(lhs.build_settings, rhs.build_settings);
+            if (rhs.player_settings != null) Settings.Merge(lhs.player_settings, rhs.player_settings);
+            if (rhs.xr_settings != null) Settings.Merge(lhs.xr_settings, rhs.xr_settings);
 
-            // Special merge settings
-            if (!string.IsNullOrEmpty(rhs.scripting_define_symbols)) result.scripting_define_symbols = result.scripting_define_symbols + ";" + rhs.scripting_define_symbols;
-            if (rhs.scene_list != null) result.scene_list.AddRange(rhs.scene_list);
-
-            return result;
         }
 
         /// <summary>
