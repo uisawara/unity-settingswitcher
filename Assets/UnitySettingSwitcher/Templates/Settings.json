@@ -3,22 +3,22 @@
     {
       "name": ".pc",
       "player_settings": {
-        "virtualRealitySupported": false
+        "virtualRealitySupported": false,
+        "scripting_define_symbols": "TARGET_PC"
       },
       "xr_settings": {
         "enabled": false
-      },
-      "scripting_define_symbols": "TARGET_PC"
+      }
     },
     {
       "name": ".vr",
       "player_settings": {
-        "virtualRealitySupported": true
+        "virtualRealitySupported": true,
+        "scripting_define_symbols": "TARGET_VR"
       },
       "xr_settings": {
         "enabled": true
-      },
-      "scripting_define_symbols": "TARGET_VR"
+      }
     },
     {
       "name": "flavors/SceneA",
@@ -52,11 +52,15 @@
     },
     {
       "name": "buildtype/develop",
-      "scripting_define_symbols": "ENV_DEVELOP"
+      "player_settings": {
+        "scripting_define_symbols": "ENV_DEVELOP"
+      }
     },
     {
       "name": "buildtype/production",
-      "scripting_define_symbols": "ENV_PRODUCTION"
+      "player_settings": {
+        "scripting_define_symbols": "ENV_PRODUCTION"
+      }
     }
   ]
 }
