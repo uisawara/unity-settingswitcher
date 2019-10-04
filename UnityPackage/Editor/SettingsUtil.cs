@@ -19,8 +19,8 @@ namespace uisawara
 
         public static void CreateBuildsettingsFromTemplate(string jsonPath)
         {
-            string jsonTemplatePath = SettingConstants.SETTING_TEMPLATE_FILE_PATHNAME;
-            File.Copy(jsonTemplatePath, jsonPath);
+            var jsonTemplate = Resources.Load("Templates/Settings") as TextAsset;
+            File.WriteAllText(jsonPath, jsonTemplate.text);
             AssetDatabase.Refresh();
         }
 
@@ -89,27 +89,33 @@ namespace uisawara
             return result;
         }
 
-        public static void ChangeBuildSettings(Settings.Environment settingenvironment)
+        public static Settings.Environment Copy(Settings.Environment lhs)
+        {
+            string tmp = JsonUtility.ToJson(lhs);
+            return JsonUtility.FromJson<Settings.Environment>(tmp);
+        }
+
+        public static void ChangeBuildSettings(Settings.Environment buildSettings)
         {
 
             var settingLog = new StringBuilder();
             settingLog.Append(" - Change BuildEnvironment: ");
-            settingLog.AppendLine(settingenvironment.name);
-            settingLog.AppendLine(JsonUtility.ToJson(settingenvironment));
+            settingLog.AppendLine(buildSettings.name);
+            settingLog.AppendLine(JsonUtility.ToJson(buildSettings));
             Debug.Log(settingLog.ToString());
 
             // TargetPlatform
             BuildTargetGroup buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
             BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            if (settingenvironment.build_settings != null)
+            if (buildSettings.build_settings != null)
             {
-                if (settingenvironment.build_settings.ContainsKey("build_target"))
+                if (buildSettings.build_settings.ContainsKey("build_target"))
                 {
-                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)settingenvironment.build_settings["build_target_group"], true);
+                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)buildSettings.build_settings["build_target_group"], true);
                 }
-                if (settingenvironment.build_settings.ContainsKey("build_target"))
+                if (buildSettings.build_settings.ContainsKey("build_target"))
                 {
-                    buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)settingenvironment.build_settings["build_target"], true);
+                    buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)buildSettings.build_settings["build_target"], true);
                 }
                 EditorUserBuildSettings.SwitchActiveBuildTarget(buildTargetGroup, buildTarget);
             }
@@ -117,41 +123,41 @@ namespace uisawara
             Debug.Log(" - BuildTarget: " + buildTarget.ToString());
 
             // *Settings
-            if (settingenvironment.player_settings != null)
+            if (buildSettings.player_settings != null)
             {
-                SettingsUtil.ApplySettings(typeof(PlayerSettings), settingenvironment.player_settings);
+                SettingsUtil.ApplySettings(typeof(PlayerSettings), buildSettings.player_settings);
             }
-            if (settingenvironment.xr_settings != null)
+            if (buildSettings.xr_settings != null)
             {
-                SettingsUtil.ApplySettings(typeof(XRSettings), settingenvironment.xr_settings);
+                SettingsUtil.ApplySettings(typeof(XRSettings), buildSettings.xr_settings);
             }
 
             // ScriptingDefineSymbols
-            if (settingenvironment.player_settings != null && settingenvironment.player_settings.ContainsKey("scripting_define_symbols"))
+            if (buildSettings.player_settings.ContainsKey("scripting_define_symbols"))
             {
-                var v = (string)settingenvironment.player_settings["scripting_define_symbols"];
+                var v = (string)buildSettings.player_settings["scripting_define_symbols"];
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, v);
                 Debug.Log(" - ScriptingDefineSymbols: " + v);
             }
 
             // Scenes
-            if (settingenvironment.scene_list != null)
+            if (buildSettings.scene_list != null)
             {
                 // ターゲットプラットフォーム
                 EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows);
 
                 // シーン構成
-                var scenes = new EditorBuildSettingsScene[settingenvironment.scene_list.Count];
+                var scenes = new EditorBuildSettingsScene[buildSettings.scene_list.Count];
                 for (int i = 0; i < scenes.Length; i++)
                 {
-                    scenes[i] = new EditorBuildSettingsScene(settingenvironment.scene_list[i], true);
+                    scenes[i] = new EditorBuildSettingsScene(buildSettings.scene_list[i], true);
                 };
                 EditorBuildSettings.scenes = scenes;
 
                 // エディタ・シーンリスト
                 for (int i = 0; i < scenes.Length; i++)
                 {
-                    EditorSceneManager.OpenScene(settingenvironment.scene_list[i], i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
+                    EditorSceneManager.OpenScene(buildSettings.scene_list[i], i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
                 };
             }
 
