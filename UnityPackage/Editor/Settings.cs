@@ -70,7 +70,7 @@ namespace uisawara
         {
             // Special merge settings
 
-            if (rhs.player_settings.ContainsKey("scripting_define_symbols"))
+            if (rhs.player_settings!=null && rhs.player_settings.ContainsKey("scripting_define_symbols"))
             {
                 string v;
                 if(lhs.player_settings==null)
@@ -87,7 +87,10 @@ namespace uisawara
                 lhs.player_settings["scripting_define_symbols"] = v + rhs.player_settings["scripting_define_symbols"];
             }
 
-            if (rhs.scene_list != null) lhs.scene_list.AddRange(rhs.scene_list);
+            if (rhs.scene_list != null)
+            {
+                lhs.scene_list.AddRange(rhs.scene_list);
+            }
 
             // Merge settings
             if (rhs.build_settings != null) Settings.Merge(lhs.build_settings, rhs.build_settings);
