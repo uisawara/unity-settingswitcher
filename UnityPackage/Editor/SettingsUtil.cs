@@ -20,8 +20,8 @@ namespace uisawara
 
         public static void CreateBuildsettingsFromTemplate(string jsonPath)
         {
-            string jsonTemplatePath = SettingConstants.SETTING_TEMPLATE_FILE_PATHNAME;
-            File.Copy(jsonTemplatePath, jsonPath);
+            var jsonTemplate = Resources.Load("Templates/Settings") as TextAsset;
+            File.WriteAllText(jsonPath, jsonTemplate.text);
             AssetDatabase.Refresh();
         }
 
@@ -109,18 +109,18 @@ namespace uisawara
 
             var settingLog = new StringBuilder();
             settingLog.Append(" - Change BuildEnvironment: ");
-            settingLog.AppendLine(settingenvironment.name);
-            settingLog.AppendLine(JsonUtility.ToJson(settingenvironment));
+            settingLog.AppendLine(buildSettings.name);
+            settingLog.AppendLine(JsonUtility.ToJson(buildSettings));
             Debug.Log(settingLog.ToString());
 
             // TargetPlatform
             BuildTargetGroup buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
             BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            if (settingenvironment.build_settings != null)
+            if (buildSettings.build_settings != null)
             {
-                if (settingenvironment.build_settings.ContainsKey("build_target_group"))
+                if (buildSettings.build_settings.ContainsKey("build_target"))
                 {
-                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)settingenvironment.build_settings["build_target_group"], true);
+                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)buildSettings.build_settings["build_target_group"], true);
                 }
 
                 if (settingenvironment.build_settings.ContainsKey("build_target"))
@@ -153,9 +153,9 @@ namespace uisawara
             {
                 SettingsUtil.ApplySettings(typeof(EditorUserBuildSettings), settingenvironment.editor_user_build_settings);
             }
-            if (settingenvironment.xr_settings != null)
+            if (buildSettings.xr_settings != null)
             {
-                SettingsUtil.ApplySettings(typeof(XRSettings), settingenvironment.xr_settings);
+                SettingsUtil.ApplySettings(typeof(XRSettings), buildSettings.xr_settings);
             }
             if (settingenvironment.android != null)
             {
@@ -175,29 +175,29 @@ namespace uisawara
             }
 
             // ScriptingDefineSymbols
-            if (settingenvironment.player_settings != null && settingenvironment.player_settings.ContainsKey("scripting_define_symbols"))
+            if (buildSettings.player_settings.ContainsKey("scripting_define_symbols"))
             {
-                var v = (string)settingenvironment.player_settings["scripting_define_symbols"];
+                var v = (string)buildSettings.player_settings["scripting_define_symbols"];
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, v);
                 Debug.Log(" - ScriptingDefineSymbols: " + v);
             }
 
             // Scenes
-            if (settingenvironment.scene_list != null)
+            if (buildSettings.scene_list != null)
             {
 
                 // シーン構成
-                var scenes = new EditorBuildSettingsScene[settingenvironment.scene_list.Count];
+                var scenes = new EditorBuildSettingsScene[buildSettings.scene_list.Count];
                 for (int i = 0; i < scenes.Length; i++)
                 {
-                    scenes[i] = new EditorBuildSettingsScene(settingenvironment.scene_list[i], true);
+                    scenes[i] = new EditorBuildSettingsScene(buildSettings.scene_list[i], true);
                 };
                 EditorBuildSettings.scenes = scenes;
 
                 // エディタ・シーンリスト
                 for (int i = 0; i < scenes.Length; i++)
                 {
-                    EditorSceneManager.OpenScene(settingenvironment.scene_list[i], i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
+                    EditorSceneManager.OpenScene(buildSettings.scene_list[i], i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
                 };
             }
 
