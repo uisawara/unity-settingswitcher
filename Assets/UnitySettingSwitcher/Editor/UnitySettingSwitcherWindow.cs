@@ -2,7 +2,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEditor.SceneManagement;
+using System.Linq;
 
 namespace uisawara
 {
@@ -71,14 +71,8 @@ namespace uisawara
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Dump CurrentSceneList"))
             {
-                var sceneList = "";
-                for(int i= 0;i<EditorSceneManager.sceneCount;i++)
-                {
-                    var x = EditorSceneManager.GetSceneAt(i).path;
-                    sceneList += "\"" + x + "\"," +"\n";
-                }
-                //var sceneList = string.Join("\n", EditorBuildSettings.scenes.Select(x => "\"" + x.path + "\","));
-                if (sceneList.Length==0)
+                var sceneList = string.Join("\n", EditorBuildSettings.scenes.Select(x => "\"" + x.path + "\","));
+                if(sceneList.Length==0)
                 {
                     return;
                 }
@@ -96,7 +90,7 @@ namespace uisawara
 
             // Build environments
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Settings:");
+            GUILayout.Label("Build Environments:");
             if (GUILayout.Button("Reload"))
             {
                 Reload();

@@ -91,10 +91,7 @@ namespace uisawara
                 lhs.player_settings["scripting_define_symbols"] = v + rhs.player_settings["scripting_define_symbols"];
             }
 
-            if (rhs.scene_list != null)
-            {
-                lhs.scene_list.AddRange(rhs.scene_list);
-            }
+            if (rhs.scene_list != null) lhs.scene_list.AddRange(rhs.scene_list);
 
             // TODO If you add setting item then add process to here
             // Merge settings
