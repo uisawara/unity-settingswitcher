@@ -10,6 +10,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.XR;
 using System.Linq;
+using static UnityEditor.PlayerSettings;
 
 namespace uisawara
 {
@@ -26,32 +27,41 @@ namespace uisawara
 
         public static Settings LoadBuildSettings()
         {
-            string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME);
-            if (File.Exists(jsonPath))
+            var result = new Settings();
+            LoadBuildSettings(Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME), result);
+            var settingFiles = Directory.GetFiles(Application.dataPath, SettingConstants.SETTING_LOCAL_FILE_PATHNAME);
+            foreach(var sf in settingFiles)
             {
-                var result = new Settings();
+                LoadBuildSettings(Path.Combine(Application.dataPath, sf), result);
+            }
+            return result;
+        }
 
-                string json = File.ReadAllText(jsonPath);
+        private static void LoadBuildSettings(string settingFilePath, Settings result)
+        {
+            if (File.Exists(settingFilePath))
+            {
+                string json = File.ReadAllText(settingFilePath);
                 var data_ = Json.Deserialize(json) as Dictionary<string, object>;
 
                 var settings = (IList)data_["settings"];
-                foreach(var s in settings)
+                foreach (var s in settings)
                 {
                     var se = new Settings.Environment();
                     result.settings.Add(se);
 
+                    // TODO If you add setting item then add process to here
                     var bs = (IDictionary)s;
-                    se.name = bs.Contains("name")? (string)bs["name"] : null;
-                    se.inherit = bs.Contains("inherit")? (string)bs["inherit"] : null;
-                    se.scene_list = bs.Contains("scene_list") ? ((List<object>)bs["scene_list"]).Select(x=>(string)x).ToList<string>() : null;
-                    se.build_settings = bs.Contains("build_settings")? (Dictionary<string, object>)bs["build_settings"] : null;
-                    se.player_settings = bs.Contains("player_settings")? (Dictionary<string, object>)bs["player_settings"] : null;
-                    se.xr_settings = bs.Contains("xr_settings")? (Dictionary<string, object>)bs["xr_settings"] : null;
+                    se.name = bs.Contains("name") ? (string)bs["name"] : null;
+                    se.inherit = bs.Contains("inherit") ? (string)bs["inherit"] : null;
+                    se.scene_list = bs.Contains("scene_list") ? ((List<object>)bs["scene_list"]).Select(x => (string)x).ToList<string>() : null;
+                    se.build_settings = bs.Contains("build_settings") ? (Dictionary<string, object>)bs["build_settings"] : null;
+                    se.player_settings = bs.Contains("player_settings") ? (Dictionary<string, object>)bs["player_settings"] : null;
+                    se.editor_user_build_settings = bs.Contains("editor_user_build_settings") ? (Dictionary<string, object>)bs["editor_user_build_settings"] : null;
+                    se.android = bs.Contains("android") ? (Dictionary<string, object>)bs["android"] : null;
+                    se.xr_settings = bs.Contains("xr_settings") ? (Dictionary<string, object>)bs["xr_settings"] : null;
                 }
-
-                return result;
             }
-            return null;
         }
 
         public static Settings.Environment Create(Settings buildSettings, string[] envList)
@@ -89,6 +99,11 @@ namespace uisawara
             return result;
         }
 
+        /// <summary>
+        /// Changes the build settings.
+        /// Apply settings to Unity Editor static properties from settingenvironment values.
+        /// </summary>
+        /// <param name="settingenvironment">Settingenvironment.</param>
         public static void ChangeBuildSettings(Settings.Environment settingenvironment)
         {
 
@@ -103,27 +118,60 @@ namespace uisawara
             BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (settingenvironment.build_settings != null)
             {
-                if (settingenvironment.build_settings.ContainsKey("build_target"))
+                if (settingenvironment.build_settings.ContainsKey("build_target_group"))
                 {
                     buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)settingenvironment.build_settings["build_target_group"], true);
                 }
+
                 if (settingenvironment.build_settings.ContainsKey("build_target"))
                 {
                     buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)settingenvironment.build_settings["build_target"], true);
+
+                    // ターゲットプラットフォーム
+                    EditorUserBuildSettings.SwitchActiveBuildTarget(buildTargetGroup, buildTarget);
                 }
-                EditorUserBuildSettings.SwitchActiveBuildTarget(buildTargetGroup, buildTarget);
+
             }
             Debug.Log(" - BuildTargetGroup: " + buildTargetGroup.ToString());
             Debug.Log(" - BuildTarget: " + buildTarget.ToString());
 
             // *Settings
+            // TODO If you add setting item then add applysettings process to here.
+
             if (settingenvironment.player_settings != null)
             {
                 SettingsUtil.ApplySettings(typeof(PlayerSettings), settingenvironment.player_settings);
+
+                if (settingenvironment.player_settings.ContainsKey("ScriptingBackend"))
+                {
+                    var value = (ScriptingImplementation)Enum.Parse(typeof(ScriptingImplementation), (string)settingenvironment.player_settings["ScriptingBackend"], true);
+                    PlayerSettings.SetPropertyInt("ScriptingBackend", (int)value, buildTargetGroup);
+                }
+
+            }
+            if (settingenvironment.editor_user_build_settings != null)
+            {
+                SettingsUtil.ApplySettings(typeof(EditorUserBuildSettings), settingenvironment.editor_user_build_settings);
             }
             if (settingenvironment.xr_settings != null)
             {
                 SettingsUtil.ApplySettings(typeof(XRSettings), settingenvironment.xr_settings);
+            }
+            if (settingenvironment.android != null)
+            {
+                SettingsUtil.ApplySettings(typeof(Android), settingenvironment.android);
+
+                if (settingenvironment.android.ContainsKey("targetArchitectures"))
+                {
+                    var value = settingenvironment.android["targetArchitectures"] as string;
+                    var tokens = value.Split(new char[] { ' ' });
+                    uint flag = 0;
+                    foreach (var t in tokens)
+                    {
+                        flag |= (uint)Enum.Parse(typeof(AndroidArchitecture), (string)t, true);
+                    }
+                    Android.targetArchitectures = (AndroidArchitecture)flag;
+                }
             }
 
             // ScriptingDefineSymbols
@@ -137,8 +185,6 @@ namespace uisawara
             // Scenes
             if (settingenvironment.scene_list != null)
             {
-                // ターゲットプラットフォーム
-                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows);
 
                 // シーン構成
                 var scenes = new EditorBuildSettingsScene[settingenvironment.scene_list.Count];
@@ -174,6 +220,12 @@ namespace uisawara
                 }
 
                 var p = target.GetProperty(key, BindingFlags.Public | BindingFlags.Static);
+                if (p == null)
+                {
+                    Debug.Log(" - unknown key: " + key);
+                    continue;
+                }
+
                 var pt = p.PropertyType;
                 if (p == null)
                 {
