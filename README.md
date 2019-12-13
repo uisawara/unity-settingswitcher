@@ -1,3 +1,7 @@
+** Warning
+
+作成中につき各種仕様は変更の余地が多々あります.
+
 # UnitySettingSwitcher
 
 構造化された設定ファイルをもとにUnity設定を切り替えられるようにします。
@@ -26,6 +30,12 @@
 * 設定例
     * PC用設定を継承したWindows64向け設定とDevelop向け設定をマージしたものをUnityへ反映する
     * VR用設定を継承したSteamVR向け設定とProduction向け設定をマージしたものをUnityへ反映する
+
+
+## 開発環境
+
+* Unity 2018.4.12f (他バージョンのUnityは未検証)
+* MacOSX Catalina Version 10.15.1
 
 
 ## 使いかた

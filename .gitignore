@@ -34,3 +34,8 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+#
+SettingsCurrent.local.json
+*.local.json
+*.local
