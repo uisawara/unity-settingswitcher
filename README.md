@@ -16,6 +16,7 @@
     * SettingSwitcherウィンドウからのSetting切替
     * Settingの有効・無効の切替
     * SwttingSwitcherウィンドウのSettingリストへ非表示なSettingの定義
+    * 複数設定ファイルでの設定定義(v0.0.4)
 
 * ※Settingは他のSettingの設定を継承(inherit)して差分設定を作ることができます。
 * ※Setting名は"/"で区切ることでグループ化することができます。（現在のところグループは１階層のみ）
