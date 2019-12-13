@@ -13,13 +13,9 @@ namespace uisawara
             public string name;
             public string inherit;
             public List<string> scene_list = new List<string>();
-
-            // TODO You add setting item to here
             public Dictionary<string, object> build_settings = new Dictionary<string, object>();
             public Dictionary<string, object> player_settings = new Dictionary<string, object>();
-            public Dictionary<string, object> editor_user_build_settings = new Dictionary<string, object>();
             public Dictionary<string, object> xr_settings = new Dictionary<string, object>();
-            public Dictionary<string, object> android = new Dictionary<string, object>();
         }
 
         public int GetEnvironmentIndex(string environmentName)
@@ -74,7 +70,7 @@ namespace uisawara
         {
             // Special merge settings
 
-            if (rhs.player_settings != null && rhs.player_settings.ContainsKey("scripting_define_symbols"))
+            if (rhs.player_settings.ContainsKey("scripting_define_symbols"))
             {
                 string v;
                 if(lhs.player_settings==null)
@@ -93,13 +89,10 @@ namespace uisawara
 
             if (rhs.scene_list != null) lhs.scene_list.AddRange(rhs.scene_list);
 
-            // TODO If you add setting item then add process to here
             // Merge settings
             if (rhs.build_settings != null) Settings.Merge(lhs.build_settings, rhs.build_settings);
             if (rhs.player_settings != null) Settings.Merge(lhs.player_settings, rhs.player_settings);
-            if (rhs.editor_user_build_settings != null) Settings.Merge(lhs.editor_user_build_settings, rhs.editor_user_build_settings);
             if (rhs.xr_settings != null) Settings.Merge(lhs.xr_settings, rhs.xr_settings);
-            if (rhs.android != null) Settings.Merge(lhs.android, rhs.android);
 
         }
 
