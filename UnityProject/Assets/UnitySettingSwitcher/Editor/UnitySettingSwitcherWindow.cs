@@ -131,7 +131,7 @@ namespace uisawara
                         UnitySettingSwitcherWindow.settingsSelector.SaveBuildSettingsSelected();
 
                         string[] envlist = UnitySettingSwitcherWindow.settingsSelector.buildSettingsSelected.environmentPaths.ToArray();
-                        Debug.Log("ApplyEnv: " + String.Join(" + ", envlist));
+                        Debug.Log("ApplyEnv: " + String.Join("+", envlist));
                         var env = SettingsUtil.Create(settings, envlist);
                         SettingsUtil.ChangeBuildSettings(env);
                     }
