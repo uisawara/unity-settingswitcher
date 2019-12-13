@@ -6,7 +6,13 @@
 
 構造化された設定ファイルをもとにUnity設定を切り替えられるようにします。
 
-![Screen Shot 2019-08-04 at 13 31 43](https://user-images.githubusercontent.com/4578728/62419488-4177fc00-b6bc-11e9-8409-19a2c3d287b3.png)
+概念図
+
+![Screen Shot 2019-12-13 at 16 06 08](https://user-images.githubusercontent.com/4578728/70777373-ea4d0b00-1dc2-11ea-944c-fc4d78ce8948.png)
+
+設定例と設定切替Window
+
+![Screen Shot 2019-12-13 at 16 08 22](https://user-images.githubusercontent.com/4578728/70777368-e6b98400-1dc2-11ea-8d14-d96432bb95fe.png)
 
 * 設定ファイルでは名前付きで設定(Setting)を定義します。
 * SettingではUnityの各種設定(BuildSettings, PlayerSettings, XRSettings)にセットする値を定義します。
