@@ -1,32 +1,13 @@
 {
   "settings": [
     {
-      "name": ".pc",
-      "player_settings": {
-        "virtualRealitySupported": false,
-        "scripting_define_symbols": "TARGET_PC"
-      },
-      "xr_settings": {
-        "enabled": false
-      }
-    },
-    {
-      "name": ".vr",
-      "player_settings": {
-        "virtualRealitySupported": true,
-        "scripting_define_symbols": "TARGET_VR"
-      },
-      "xr_settings": {
-        "enabled": true
-      }
-    },
-    {
       "name": "flavors/SceneA",
-      "inherit": ".pc",
-      "scene_list": [
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneB.unity"
-      ],
+      "editor_build_settings": {
+        "scenes": [
+          "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
+          "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneB.unity"
+        ]
+      },
       "build_settings": {
         "build_target_group": "Standalone",
         "build_target": "StandaloneWindows64"
@@ -37,11 +18,12 @@
     },
     {
       "name": "flavors/SceneB",
-      "inherit": ".vr",
-      "scene_list": [
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
-        "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneC.unity"
-      ],
+      "editor_build_settings": {
+        "scenes": [
+          "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneA.unity",
+          "Assets/UnitySettingSwitcher/Samples/Scenes/SampleSceneC.unity"
+        ]
+      },
       "build_settings": {
         "build_target_group": "Standalone",
         "build_target": "StandaloneWindows64"
