@@ -5,6 +5,10 @@
       "build_settings": {
         "build_target_group": "Android",
         "build_target": "Android"
+      },
+      "android": {
+        "minSdkVersion": "AndroidApiLevel22",
+        "targetSdkVersion": "AndroidApiLevel22"
       }
     },
     {

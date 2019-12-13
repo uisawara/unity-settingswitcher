@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using System.Linq;
 using static UnityEditor.PlayerSettings;
+using UnityEditor.Build.Content;
 
 namespace uisawara
 {
@@ -30,9 +31,9 @@ namespace uisawara
             var result = new Settings();
             LoadBuildSettings(Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME), result);
             var settingFiles = Directory.GetFiles(Application.dataPath, SettingConstants.SETTING_LOCAL_FILE_PATHNAME);
-            foreach(var sf in settingFiles)
+            foreach (var sf in settingFiles)
             {
-                LoadBuildSettings(Path.Combine(Application.dataPath, sf), result);
+                LoadBuildSettings(sf, result);
             }
             return result;
         }
@@ -54,9 +55,9 @@ namespace uisawara
                     var bs = (IDictionary)s;
                     se.name = bs.Contains("name") ? (string)bs["name"] : null;
                     se.inherit = bs.Contains("inherit") ? (string)bs["inherit"] : null;
-                    se.scene_list = bs.Contains("scene_list") ? ((List<object>)bs["scene_list"]).Select(x => (string)x).ToList<string>() : null;
                     se.build_settings = bs.Contains("build_settings") ? (Dictionary<string, object>)bs["build_settings"] : null;
                     se.player_settings = bs.Contains("player_settings") ? (Dictionary<string, object>)bs["player_settings"] : null;
+                    se.editor_build_settings = bs.Contains("editor_build_settings") ? (Dictionary<string, object>)bs["editor_build_settings"] : null;
                     se.editor_user_build_settings = bs.Contains("editor_user_build_settings") ? (Dictionary<string, object>)bs["editor_user_build_settings"] : null;
                     se.android = bs.Contains("android") ? (Dictionary<string, object>)bs["android"] : null;
                     se.xr_settings = bs.Contains("xr_settings") ? (Dictionary<string, object>)bs["xr_settings"] : null;
@@ -70,7 +71,7 @@ namespace uisawara
 
             // 環境設定の連結・継承解決
             var resolvedEnvList = new List<string>();
-            foreach(var env in envList)
+            foreach (var env in envList)
             {
                 var inherit = buildSettings.ResolveInherit(env);
                 resolvedEnvList.AddRange(inherit);
@@ -78,7 +79,7 @@ namespace uisawara
                 sb.Append(string.Join(" < ", inherit));
                 sb.Append("] x [");
             }
-            if(sb.Length>=1)
+            if (sb.Length >= 1)
             {
                 sb.Remove(sb.Length - 5, 5);
             }
@@ -86,7 +87,7 @@ namespace uisawara
 
             // 環境設定の生成
             var result = new Settings.Environment();
-            foreach(var env in resolvedEnvList)
+            foreach (var env in resolvedEnvList)
             {
                 var index = buildSettings.GetEnvironmentIndex(env);
                 if (index == -1)
@@ -118,16 +119,19 @@ namespace uisawara
             BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (settingenvironment.build_settings != null)
             {
-                if (settingenvironment.build_settings.ContainsKey("build_target_group"))
+                SettingsUtil.ApplySettings(typeof(BuildSettings), settingenvironment.build_settings, new Dictionary<string, Action<object, object>>()
                 {
-                    buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)settingenvironment.build_settings["build_target_group"], true);
-                }
+                    {"build_target_group", (target, value) => {
+                        buildTargetGroup = (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), (string)settingenvironment.build_settings["build_target_group"], true);
+                    }},
+                    {"build_target", (target, value) => {
+                        buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)settingenvironment.build_settings["build_target"], true);
+                    }},
+                });
 
+                // ターゲットプラットフォーム切替
                 if (settingenvironment.build_settings.ContainsKey("build_target"))
                 {
-                    buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), (string)settingenvironment.build_settings["build_target"], true);
-
-                    // ターゲットプラットフォーム
                     EditorUserBuildSettings.SwitchActiveBuildTarget(buildTargetGroup, buildTarget);
                 }
 
@@ -140,15 +144,30 @@ namespace uisawara
 
             if (settingenvironment.player_settings != null)
             {
-                SettingsUtil.ApplySettings(typeof(PlayerSettings), settingenvironment.player_settings);
-
-                if (settingenvironment.player_settings.ContainsKey("ScriptingBackend"))
+                SettingsUtil.ApplySettings(typeof(PlayerSettings), settingenvironment.player_settings, new Dictionary<string, Action<object, object>>()
                 {
-                    var value = (ScriptingImplementation)Enum.Parse(typeof(ScriptingImplementation), (string)settingenvironment.player_settings["ScriptingBackend"], true);
-                    PlayerSettings.SetPropertyInt("ScriptingBackend", (int)value, buildTargetGroup);
-                }
-
+                    {"scripting_define_symbols", (target, value) => {
+                        Debug.Log(" - ScriptingDefineSymbols: " + (string)value);
+                        PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, (string)value);
+                    }},
+                    {"ScriptingBackend", (target, value) => {
+                        Debug.Log(" - scriptingBackend: " + (string)value);
+                        PlayerSettings.SetScriptingBackend(buildTargetGroup, (ScriptingImplementation)Enum.Parse(typeof(ScriptingImplementation), (string)value));
+                    }},
+                    {"VirtualRealitySDKs", (target, value) => {
+                        Debug.Log(" - VirtualRealitySDKs: " + (string)value);
+                        PlayerSettings.SetVirtualRealitySDKs(EditorUserBuildSettings.selectedBuildTargetGroup, ((string)value).Split(new char[]{' ' }));
+                    }},
+                });
             }
+            //if (settingenvironment.editor_build_settings != null)
+            //{
+            //    SettingsUtil.ApplySettings(typeof(EditorBuildSettings), settingenvironment.editor_build_settings, new Dictionary<string, Action<object, object>>()
+            //    {
+            //        {"scenes", (target, value) => {
+            //        }},
+            //    });
+            //}
             if (settingenvironment.editor_user_build_settings != null)
             {
                 SettingsUtil.ApplySettings(typeof(EditorUserBuildSettings), settingenvironment.editor_user_build_settings);
@@ -160,32 +179,11 @@ namespace uisawara
             if (settingenvironment.android != null)
             {
                 SettingsUtil.ApplySettings(typeof(Android), settingenvironment.android);
-
-                if (settingenvironment.android.ContainsKey("targetArchitectures"))
-                {
-                    var value = settingenvironment.android["targetArchitectures"] as string;
-                    var tokens = value.Split(new char[] { ' ' });
-                    uint flag = 0;
-                    foreach (var t in tokens)
-                    {
-                        flag |= (uint)Enum.Parse(typeof(AndroidArchitecture), (string)t, true);
-                    }
-                    Android.targetArchitectures = (AndroidArchitecture)flag;
-                }
-            }
-
-            // ScriptingDefineSymbols
-            if (settingenvironment.player_settings != null && settingenvironment.player_settings.ContainsKey("scripting_define_symbols"))
-            {
-                var v = (string)settingenvironment.player_settings["scripting_define_symbols"];
-                PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, v);
-                Debug.Log(" - ScriptingDefineSymbols: " + v);
             }
 
             // Scenes
             if (settingenvironment.scene_list != null)
             {
-
                 // シーン構成
                 var scenes = new EditorBuildSettingsScene[settingenvironment.scene_list.Count];
                 for (int i = 0; i < scenes.Length; i++)
@@ -203,7 +201,12 @@ namespace uisawara
 
         }
 
-        private static void ApplySettings(Type target, Dictionary<string, object> data)
+        /// <summary>
+        /// Apply settings to The target class.
+        /// </summary>
+        /// <param name="target">Target.</param>
+        /// <param name="data">Data.</param>
+        private static void ApplySettings(Type target, Dictionary<string, object> data, Dictionary<string, Action<object, object>> customDispatcher = null)
         {
             var fis = target.GetMembers(BindingFlags.Public | BindingFlags.Static);
             var sb = new StringBuilder();
@@ -213,50 +216,77 @@ namespace uisawara
                 var key = kv.Key;
                 var value = kv.Value;
 
-                // Skip special keys.
-                if(key== "scripting_define_symbols")
+                if (customDispatcher != null && customDispatcher.ContainsKey(key))
                 {
-                    continue;
-                }
-
-                var p = target.GetProperty(key, BindingFlags.Public | BindingFlags.Static);
-                if (p == null)
-                {
-                    Debug.Log(" - unknown key: " + key);
-                    continue;
-                }
-
-                var pt = p.PropertyType;
-                if (p == null)
-                {
-                    sb.AppendLine(" - unknown key: " + key);
-                    continue;
-                }
-
-                sb.Append("    - ");
-                sb.AppendLine(key + " = " + value);
-                Debug.Log(sb.ToString());
-
-                if (pt == typeof(String))
-                {
-                    var v = (String)value;
-                    p.SetValue(null, v);
+                    customDispatcher[key](target, value);
                 }
                 else
-                if (pt == typeof(Boolean))
                 {
-                    p.SetValue(null, (Boolean)value);
+
+                    var p = target.GetProperty(key, BindingFlags.Public | BindingFlags.Static);
+                    if (p == null)
+                    {
+                        Debug.Log(" - unknown key: " + key);
+                        continue;
+                    }
+
+                    var pt = p.PropertyType;
+                    if (p == null)
+                    {
+                        sb.AppendLine(" - unknown key: " + key);
+                        continue;
+                    }
+
+                    sb.Append("    - ");
+                    sb.AppendLine(key + " = " + value);
+                    Debug.Log(sb.ToString());
+
+                    if (pt == typeof(String))
+                    {
+                        var v = (String)value;
+                        p.SetValue(null, v);
+                    }
+                    else
+                    if (pt == typeof(Boolean))
+                    {
+                        p.SetValue(null, (Boolean)value);
+                    }
+                    else
+                    if (pt == typeof(int))
+                    {
+                        p.SetValue(null, (int)value);
+                    }
+                    else
+                    if (pt == typeof(float))
+                    {
+                        p.SetValue(null, (float)value);
+                    }
+                    else
+                    if (pt.IsEnum)
+                    {
+                        var fa = pt.GetCustomAttribute(typeof(FlagsAttribute));
+                        if (fa == null)
+                        {
+                            p.SetValue(null, Enum.Parse(pt, (string)value));
+                        }
+                        else
+                        {
+                            var tokens = ((string)value).Split(new char[] { ' ' });
+                            uint flag = 0;
+                            foreach (var t in tokens)
+                            {
+                                flag |= (uint)Enum.Parse(pt, (string)t, true);
+                            }
+                            p.SetValue(null, flag);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError(" - unknown type: " + key);
+                    }
+
                 }
-                else
-                if (pt == typeof(int))
-                {
-                    p.SetValue(null, (int)value);
-                }
-                else
-                if (pt == typeof(float))
-                {
-                    p.SetValue(null, (float)value);
-                }
+
             }
 
         }

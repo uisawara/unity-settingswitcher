@@ -1,0 +1,25 @@
+{
+  "settings": [
+    {
+      "name": "targets/non-vr",
+      "player_settings": {
+        "virtualRealitySupported": false,
+        "scripting_define_symbols": "TARGET_NONVR"
+      },
+      "xr_settings": {
+        "enabled": false
+      }
+    },
+    {
+      "name": "targets/vr-oculus",
+      "player_settings": {
+        "virtualRealitySupported": true,
+        "VirtualRealitySDKs": "Oculus",
+        "scripting_define_symbols": "TARGET_VR TARGET_OCULUS"
+      },
+      "xr_settings": {
+        "enabled": true
+      }
+    }
+  ]
+}
