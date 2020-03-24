@@ -2,9 +2,10 @@
 
 作成中につき各種仕様は変更の余地が多々あります.
 
-# UnitySettingSwitcher
+# unity-settingswitcher
 
-構造化された設定ファイルをもとにUnity設定を切り替えられるようにします。
+* データ駆動で Unity の各種設定 （BuildSettings, PlayerSettings, XRSettings等) をできるようにする Editor拡張です。
+* 名前付きで設定を定義して、それら設定を組み合わせて Unity設定を作ることができます。
 
 概念図
 
