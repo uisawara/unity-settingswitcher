@@ -41,10 +41,7 @@ namespace uisawara
                 Reload();
                 if (settings == null)
                 {
-                    if (GUILayout.Button("Create " + SettingConstants.SETTING_FILE_NAME + " from template"))
-                    {
-                        SettingsUtil.CreateBuildsettingsFromTemplate(jsonPath);
-                    }
+                    GUILayout.Label("Setup Setting.json first.");
                     return;
                 }
             }

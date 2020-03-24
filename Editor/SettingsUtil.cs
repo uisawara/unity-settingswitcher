@@ -19,13 +19,6 @@ namespace uisawara
     public static class SettingsUtil
     {
 
-        public static void CreateBuildsettingsFromTemplate(string jsonPath)
-        {
-            string jsonTemplatePath = SettingConstants.SETTING_TEMPLATE_FILE_PATHNAME;
-            File.Copy(jsonTemplatePath, jsonPath);
-            AssetDatabase.Refresh();
-        }
-
         public static Settings LoadBuildSettings()
         {
             var result = new Settings();
