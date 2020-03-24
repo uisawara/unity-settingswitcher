@@ -44,16 +44,30 @@
 * Unity 2018.4.12f (他バージョンのUnityは未検証)
 * MacOSX Catalina Version 10.15.1
 
-
 ## 使いかた
+
+### Unity PackageManager版
+
+- 導入
+  - Packages/manifest.jsonへ以下を追記します。
+```
+{
+  "dependencies": {
+    "work.mmzk.libs.minijson": "https://github.com/uisawara/unity-minijson.git",
+    "work.mmzk.libs.unitysettingswitcher": "https://github.com/uisawara/unity-settingswitcher.git"
+  }
+}
+```
+
+- 初期設定
+  - UnitySettingSwitcherウィンドウを開く。(Window->Unity Setting Switcherを選択か、CMD+E)
+  - Packages/UnitySettingSwitcher/Templates/settings/Settings.jsonをAssets/へコピーする
+  - Assets/Settings.jsonをテキストエディタ等で編集して設定を定義する
+
+### unitypackage版 (deprecated / いずれPackageManagerのみになります)
 
 - 導入
   - MiniJSONが必要です (https://gist.github.com/darktable/1411710)
-
-- 手順
-  - UnitySettingSwitcherウィンドウを開く。(Window->Unity Setting Switcherを選択か、CMD+E)
-  - "Create settings.json from template"ボタンをクリックすると、/Assets/ディレクトリにsettings.jsonが生成される。
-  - settings.jsonを編集して設定を定義する。
 
 ## ファイル構成
 
