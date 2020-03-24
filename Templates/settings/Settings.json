@@ -1,0 +1,47 @@
+{
+  "settings": [
+    {
+      "name": "flavors/SceneA",
+      "editor_build_settings": {
+        "scenes": [
+          "Assets/Scenes/SampleScene.unity",
+        ]
+      }
+    },
+    {
+      "name": "targets/StandaloneOSX",
+      "build_settings": {
+        "build_target_group": "Standalone",
+        "build_target": "StandaloneOSX"
+      }
+    },
+    {
+      "name": "targets/Android",
+      "build_settings": {
+        "build_target_group": "Android",
+        "build_target": "Android"
+      }
+    },
+    {
+      "name": "targets/iOS",
+      "build_settings": {
+        "build_target_group": "iOS",
+        "build_target": "iOS"
+      }
+    },
+    {
+      "name": "buildtype/develop",
+      "player_settings": {
+        "applicationIdentifier": "com.example.sample.develop",
+        "scripting_define_symbols": "ENV_DEVELOP"
+      }
+    },
+    {
+      "name": "buildtype/production",
+      "player_settings": {
+        "applicationIdentifier": "com.example.sample",
+        "scripting_define_symbols": "ENV_PRODUCTION"
+      }
+    }
+  ]
+}
