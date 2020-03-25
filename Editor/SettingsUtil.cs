@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -18,13 +18,6 @@ namespace uisawara
 
     public static class SettingsUtil
     {
-
-        public static void CreateBuildsettingsFromTemplate(string jsonPath)
-        {
-            string jsonTemplatePath = SettingConstants.SETTING_TEMPLATE_FILE_PATHNAME;
-            File.Copy(jsonTemplatePath, jsonPath);
-            AssetDatabase.Refresh();
-        }
 
         public static Settings LoadBuildSettings()
         {
@@ -157,6 +150,11 @@ namespace uisawara
                     {"VirtualRealitySDKs", (target, value) => {
                         Debug.Log(" - VirtualRealitySDKs: " + (string)value);
                         PlayerSettings.SetVirtualRealitySDKs(EditorUserBuildSettings.selectedBuildTargetGroup, ((string)value).Split(new char[]{' ' }));
+                    }},
+                    {"applicationIdentifier", (target, value) => {
+                        Debug.Log(" - applicationIdentifier: " + (string)value);
+                        //PlayerSettings.SetApplicationIdentifier(EditorUserBuildSettings.selectedBuildTargetGroup, (string)value);
+                        PlayerSettings.SetApplicationIdentifier(buildTargetGroup, (string)value);
                     }},
                 });
             }

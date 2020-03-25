@@ -17,9 +17,6 @@
         "VirtualRealitySDKs": "Oculus",
         "scripting_define_symbols": "TARGET_VR TARGET_OCULUS"
       },
-      "editor_user_build_settings": {
-        "androidBuildSubtarget": "ASTC"
-      },
       "xr_settings": {
         "enabled": true
       }
