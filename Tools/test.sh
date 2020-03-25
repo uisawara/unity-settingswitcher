@@ -1,4 +1,4 @@
-# test.sh <unity-version> <settings-envlist ex: flavors/SceneA+targets/Android+buildtype/develop>
-cd $(dirname $0)/../../../../
-/Applications/Unity/Hub/Editor/$1/Unity.app/Contents/MacOS/Unity -batchmode -logFile /dev/stdout -projectPath . -executeMethod uisawara.BuildScript.ApplyBuildCmdargs --envlist $2 -runTests -testPlatform playmode -editorTestsResultFile ./Tests/playmode-result.xml
-/Applications/Unity/Hub/Editor/$1/Unity.app/Contents/MacOS/Unity -batchmode -logFile /dev/stdout -projectPath . -executeMethod uisawara.BuildScript.ApplyBuildCmdargs --envlist $2 -runEditorTests -editorTestsResultFile ./Tests/editormode-result.xml
+# test.sh <settings-envlist ex: flavors/SceneA+targets/Android+buildtype/develop>
+source ./envs.sh || exit $?
+$UNITY_APP -batchmode -logFile /dev/stdout -projectPath $PROJECT_PATH -executeMethod uisawara.BuildScript.ApplyBuildCmdargs --envlist $1 -runTests -testPlatform playmode -editorTestsResultFile $PROJECT_PATH/Tests/playmode-result.xml
+$UNITY_APP -batchmode -logFile /dev/stdout -projectPath $PROJECT_PATH -executeMethod uisawara.BuildScript.ApplyBuildCmdargs --envlist $1 -runEditorTests -editorTestsResultFile $PROJECT_PATH/Tests/editormode-result.xml
