@@ -1,45 +1,43 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
+using Debug = UnityEngine.Debug;
 
 namespace uisawara
 {
-
     /// Overview
     /// - ビルド設定定義ファイルにより管理しやすいビルド設定管理
     /// - ビルド設定の組み合わせにより構成管理を容易にする
     /// - ビルド設定の継承により設定差分の管理を容易にする
-    ///     - 設定のグループ分け
-    ///     - 設定の継承
-
+    /// - 設定のグループ分け
+    /// - 設定の継承
     /// <summary>
-    /// Build environment window.
-    /// ビルド環境を切り替えるUnityEditor拡張です。
+    ///     Build environment window.
+    ///     ビルド環境を切り替えるUnityEditor拡張です。
     /// </summary>
     public class UnitySettingSwitcherWindow : EditorWindow
     {
+        private static Settings _settings;
+        private static readonly SettingsSelector SettingsSelector = new SettingsSelector();
 
-        private static Settings settings;
-        private static SettingsSelector settingsSelector = new SettingsSelector();
-
-        [MenuItem("Window/Unity Setting Switcher %e")]
-        static void Open()
+        [MenuItem("Tools/Unity Setting Switcher %e")]
+        private static void Open()
         {
             GetWindow<UnitySettingSwitcherWindow>(false, "Unity Setting Switcher");
         }
 
-        void OnGUI()
+        private void OnGUI()
         {
+            var jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME);
+            SettingsSelector.LoadBuildSettingsSelected();
 
-            string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTING_FILE_NAME);
-            settingsSelector.LoadBuildSettingsSelected();
-
-            if (UnitySettingSwitcherWindow.settings == null)
+            if (_settings == null)
             {
                 Reload();
-                if (settings == null)
+                if (_settings == null)
                 {
                     GUILayout.Label("Setup Setting.json first.");
                     return;
@@ -51,9 +49,7 @@ namespace uisawara
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("BuildSettings"))
-            {
-                EditorWindow.GetWindow(Type.GetType("UnityEditor.BuildPlayerWindow,UnityEditor"), true, "Build Environment");
-            }
+                GetWindow(Type.GetType("UnityEditor.BuildPlayerWindow,UnityEditor"), true, "Build Environment");
             //if (GUILayout.Button("PlayerSettings"))
             //{
             //    // Inspector
@@ -61,26 +57,23 @@ namespace uisawara
             //}
             if (GUILayout.Button("PlayerSettings"))
             {
-                SettingsService.OpenProjectSettings("Project/Player"); ;
+                SettingsService.OpenProjectSettings("Project/Player");
+                ;
             }
+
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Dump CurrentSceneList"))
             {
                 var sceneList = string.Join("\n", EditorBuildSettings.scenes.Select(x => "\"" + x.path + "\","));
-                if(sceneList.Length==0)
-                {
-                    return;
-                }
+                if (sceneList.Length == 0) return;
                 sceneList += Environment.NewLine;
 
-                Debug.Log(sceneList.ToString());
+                Debug.Log(sceneList);
             }
-            if (GUILayout.Button("Open Buildscript"))
-            {
-                System.Diagnostics.Process.Start(jsonPath);
-            }
+
+            if (GUILayout.Button("Open Buildscript")) Process.Start(jsonPath);
             GUILayout.EndHorizontal();
 
             GUILayout.Space(20);
@@ -88,10 +81,7 @@ namespace uisawara
             // Build environments
             GUILayout.BeginHorizontal();
             GUILayout.Label("Build Environments:");
-            if (GUILayout.Button("Reload"))
-            {
-                Reload();
-            }
+            if (GUILayout.Button("Reload")) Reload();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
@@ -99,16 +89,16 @@ namespace uisawara
             GUILayout.BeginVertical();
 
             // Setting buttons
-            string group = "";
-            foreach (var bs in settings.settings)
+            var group = "";
+            foreach (var bs in _settings.settings)
             {
-                string name = bs.name;
+                var name = bs.name;
 
-                int index = bs.name.LastIndexOf('/');
-                if (index!=-1)
+                var index = bs.name.LastIndexOf('/');
+                if (index != -1)
                 {
-                    string g = bs.name.Substring(0, index);
-                    name = bs.name.Substring(index+1);
+                    var g = bs.name.Substring(0, index);
+                    name = bs.name.Substring(index + 1);
                     if (group != g)
                     {
                         group = g;
@@ -118,18 +108,18 @@ namespace uisawara
 
                 if (name[0] != '.')
                 {
-                    bool activeEnv = UnitySettingSwitcherWindow.settingsSelector.IsSelected(bs.name);
+                    var activeEnv = SettingsSelector.IsSelected(bs.name);
                     GUI.backgroundColor = activeEnv ? Color.gray : new Color(32, 96, 128);
 
-                    if (GUILayout.Button((activeEnv ? "*":"") + name))
+                    if (GUILayout.Button((activeEnv ? "*" : "") + name))
                     {
-                        UnitySettingSwitcherWindow.settingsSelector.LoadBuildSettingsSelected();
-                        UnitySettingSwitcherWindow.settingsSelector.Select(bs.name);
-                        UnitySettingSwitcherWindow.settingsSelector.SaveBuildSettingsSelected();
+                        SettingsSelector.LoadBuildSettingsSelected();
+                        SettingsSelector.Select(bs.name);
+                        SettingsSelector.SaveBuildSettingsSelected();
 
-                        string[] envlist = UnitySettingSwitcherWindow.settingsSelector.buildSettingsSelected.environmentPaths.ToArray();
-                        Debug.Log("ApplyEnv: " + String.Join("+", envlist));
-                        var env = SettingsUtil.Create(settings, envlist);
+                        var envlist = SettingsSelector.buildSettingsSelected.environmentPaths.ToArray();
+                        Debug.Log("ApplyEnv: " + string.Join("+", envlist));
+                        var env = SettingsUtil.Create(_settings, envlist);
                         SettingsUtil.ChangeBuildSettings(env);
                     }
                 }
@@ -144,10 +134,8 @@ namespace uisawara
         private void Reload()
         {
             var buildSettings = SettingsUtil.LoadBuildSettings();
-            UnitySettingSwitcherWindow.settings = buildSettings;
+            _settings = buildSettings;
             Debug.Log("reload " + SettingConstants.SETTING_FILE_NAME + " finished");
         }
-
     }
-
 }
