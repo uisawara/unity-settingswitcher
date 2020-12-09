@@ -6,26 +6,22 @@ using UnityEngine;
 
 namespace uisawara
 {
-
     [Serializable]
     public class SettingsSelected
     {
-
         public List<string> environmentPaths = new List<string>();
-
     }
 
     public class SettingsSelector
     {
-
         public SettingsSelected buildSettingsSelected { get; private set; }
 
         public void LoadBuildSettingsSelected()
         {
-            string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTINGCURRENT_FILE_NAME);
+            var jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTINGCURRENT_FILE_NAME);
             if (File.Exists(jsonPath))
             {
-                string json = File.ReadAllText(jsonPath);
+                var json = File.ReadAllText(jsonPath);
                 var data = JsonUtility.FromJson<SettingsSelected>(json);
                 buildSettingsSelected = data;
             }
@@ -37,20 +33,19 @@ namespace uisawara
 
         public void SaveBuildSettingsSelected()
         {
-            string jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTINGCURRENT_FILE_NAME);
-            string json = JsonUtility.ToJson(buildSettingsSelected);
+            var jsonPath = Path.Combine(Application.dataPath, SettingConstants.SETTINGCURRENT_FILE_NAME);
+            var json = JsonUtility.ToJson(buildSettingsSelected);
             File.WriteAllText(jsonPath, json);
         }
 
         public void Select(string envname)
         {
-
             // 既存設定をパース
             var pnl = new Dictionary<string, KeyValue<string, string>>();
             foreach (var ep in buildSettingsSelected.environmentPaths)
             {
                 var eppn = SplitPathName(ep);
-                pnl[eppn.key] = new KeyValue<string, string>()
+                pnl[eppn.key] = new KeyValue<string, string>
                 {
                     key = ep,
                     value = eppn.value
@@ -67,7 +62,7 @@ namespace uisawara
             else
             {
                 // 設定を有効化
-                pnl[pn.key] = new KeyValue<string, string>()
+                pnl[pn.key] = new KeyValue<string, string>
                 {
                     key = envname,
                     value = pn.value
@@ -76,29 +71,29 @@ namespace uisawara
 
             // 新規設定を反映
             buildSettingsSelected.environmentPaths = pnl.Select(x => x.Value.key).ToList();
-
         }
 
         public bool IsSelected(string envname)
         {
-            if(buildSettingsSelected==null)
+            if (buildSettingsSelected == null)
             {
                 return false;
             }
+
             return buildSettingsSelected.environmentPaths.IndexOf(envname) != -1;
         }
 
         /// <summary>
-        /// 環境設定フルネームをグループ名と個別名に分割.
+        ///     環境設定フルネームをグループ名と個別名に分割.
         /// </summary>
         /// <param name="pathname"></param>
         /// <returns></returns>
-        KeyValue<string, string> SplitPathName(string pathname)
+        private KeyValue<string, string> SplitPathName(string pathname)
         {
             var path = "";
             var name = "";
 
-            int index = pathname.LastIndexOf('/');
+            var index = pathname.LastIndexOf('/');
             if (index == -1)
             {
                 name = pathname;
@@ -109,7 +104,7 @@ namespace uisawara
                 name = pathname.Substring(index + 1);
             }
 
-            var result = new KeyValue<string, string>()
+            var result = new KeyValue<string, string>
             {
                 key = path,
                 value = name
@@ -117,12 +112,10 @@ namespace uisawara
             return result;
         }
 
-        class KeyValue<TKey, TValue>
+        private class KeyValue<TKey, TValue>
         {
             public TKey key;
             public TValue value;
         }
-
     }
-
 }
