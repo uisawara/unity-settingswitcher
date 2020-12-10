@@ -33,7 +33,7 @@ namespace uisawara
             if (File.Exists(settingFilePath))
             {
                 var json = File.ReadAllText(settingFilePath);
-                var data_ = Json.Deserialize(json) as Dictionary<string, object>;
+                var data_ = MiniJSON.Json.Deserialize(json) as Dictionary<string, object>;
 
                 var settings = (IList) data_["settings"];
                 foreach (var s in settings)
