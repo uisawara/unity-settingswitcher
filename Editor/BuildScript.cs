@@ -71,9 +71,15 @@ namespace uisawara
             // Start build
             var outputPath = s_ouputPath;
             var outputName = PlayerSettings.productName;
-            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+
+            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.StandaloneWindows ||
+                EditorUserBuildSettings.activeBuildTarget == BuildTarget.StandaloneWindows64)
             {
-                outputName = outputName + ".apk";
+                outputName += ".exe";
+            }
+            else if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+            {
+                outputName += ".apk";
             }
 
             Directory.CreateDirectory(outputPath);
